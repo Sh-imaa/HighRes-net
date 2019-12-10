@@ -5,19 +5,22 @@ import torch
 
 
 class ResidualBlock(nn.Module):
-    def __init__(self, channel_size=64, kernel_size=3):
+    def __init__(self, channel_size=64, kernel_size=3, dr=0.0):
         '''
         Args:
             channel_size : int, number of hidden channels
             kernel_size : int, shape of a 2D kernel
+            dr : float, dropout rate
         '''
         
         super(ResidualBlock, self).__init__()
         padding = kernel_size // 2
         self.block = nn.Sequential(
             nn.Conv2d(in_channels=channel_size, out_channels=channel_size, kernel_size=kernel_size, padding=padding),
+            nn.Dropout(p=dr),
             nn.PReLU(),
             nn.Conv2d(in_channels=channel_size, out_channels=channel_size, kernel_size=kernel_size, padding=padding),
+            nn.Dropout(p=dr),
             nn.PReLU()
         )
 
@@ -46,13 +49,15 @@ class Encoder(nn.Module):
         num_layers = config["num_layers"]
         kernel_size = config["kernel_size"]
         channel_size = config["channel_size"]
+        dr = config["dropout"]
         padding = kernel_size // 2
 
         self.init_layer = nn.Sequential(
             nn.Conv2d(in_channels=in_channels, out_channels=channel_size, kernel_size=kernel_size, padding=padding),
+            nn.Dropout(p=dr),
             nn.PReLU())
 
-        res_layers = [ResidualBlock(channel_size, kernel_size) for _ in range(num_layers)]
+        res_layers = [ResidualBlock(channel_size, kernel_size, dr) for _ in range(num_layers)]
         self.res_layers = nn.Sequential(*res_layers)
 
         self.final = nn.Sequential(
@@ -87,6 +92,7 @@ class RecuversiveNet(nn.Module):
         self.input_channels = config["in_channels"]
         self.num_layers = config["num_layers"]
         self.alpha_residual = config["alpha_residual"]
+        dr = config["dropout"]
         kernel_size = config["kernel_size"]
         padding = kernel_size // 2
 
@@ -94,6 +100,7 @@ class RecuversiveNet(nn.Module):
             ResidualBlock(2 * self.input_channels, kernel_size),
             nn.Conv2d(in_channels=2 * self.input_channels, out_channels=self.input_channels,
                       kernel_size=kernel_size, padding=padding),
+            nn.Dropout(p=dr),
             nn.PReLU())
 
     def forward(self, x, alphas):
@@ -144,10 +151,12 @@ class Decoder(nn.Module):
         
         super(Decoder, self).__init__()
 
+        p = config["dropout"]
         self.deconv = nn.Sequential(nn.ConvTranspose2d(in_channels=config["deconv"]["in_channels"],
                                                        out_channels=config["deconv"]["out_channels"],
                                                        kernel_size=config["deconv"]["kernel_size"],
                                                        stride=config["deconv"]["stride"]),
+                                    nn.Dropout(p=dr),
                                     nn.PReLU())
 
         self.final = nn.Conv2d(in_channels=config["final"]["in_channels"],
