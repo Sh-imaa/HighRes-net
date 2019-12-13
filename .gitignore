@@ -4,5 +4,6 @@ __pycache__/
 src.egg-info/
 .ipynb_checkpoints
 .idea
+notebooks/
 venv
 

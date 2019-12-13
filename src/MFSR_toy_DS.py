@@ -6,6 +6,7 @@ from torch.utils.data import Dataset, DataLoader
 import torchvision.transforms as T
 
 def random_homography(img, scale=0.02):
+    numpy.random.seed(29) 
     np_img = np.array(img)
     np_img = np.moveaxis(np_img, 0, -1)
     w, h = np_img.shape[1:3]
@@ -20,6 +21,7 @@ def random_homography(img, scale=0.02):
 
 def trans_and_scale(img, rot=10, trans=(0.05, 0.05),
                     homography=False, random_interpolation=False):
+    numpy.random.seed(29)
     h, w = np.array(img).shape[1:3]
     transformation = []
     trans_interpolation = 2
@@ -41,6 +43,7 @@ class MFSRDataSet(Dataset):
     def __init__(self, data, views=2, max_view=False,
                  blur=True, to_grey=False, homography=False):
         super().__init__()
+        numpy.random.seed(29)
         self.data = data
         self.views = views
         self.homography = homography
