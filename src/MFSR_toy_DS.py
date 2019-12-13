@@ -21,7 +21,7 @@ def random_homography(img, scale=0.02):
 
 def trans_and_scale(img, rot=10, trans=(0.05, 0.05),
                     homography=False, random_interpolation=False):
-    numpy.random.seed(29)
+    random.seed(29)
     h, w = np.array(img).shape[1:3]
     transformation = []
     trans_interpolation = 2
